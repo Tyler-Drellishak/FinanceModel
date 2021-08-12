@@ -12,15 +12,17 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+#F5OB4NT2O8MAOMLY
+
 #Getting the Data from Yahoo, saving it in the "Data" DataFrame indexed by Ticker
 
-Ticker = 'CLF'
+Ticker = 'VOO'
 Start = '2018-01-01'
 End = dt.datetime.today()
 Partitions = 4000
 
 Data = pd.DataFrame(data = None)
-Data[Ticker] = web.DataReader(Ticker, 'yahoo', start=Start)['Adj Close']
+Data[Ticker] = web.DataReader(Ticker, 'av-weekly-adjusted', start=Start, api_key = 'F5OB4NT2O8MAOMLY')['close']
 StartPrice = Data[Ticker][1]
 
 
@@ -30,30 +32,30 @@ StartPrice = Data[Ticker][1]
 
 DataDifferences = Data.diff()
 
-out = pd.DataFrame(index = Data.index[1:], columns = ['Daily change'])
+out = pd.DataFrame(index = Data.index[1:], columns = ['Weekly change'])
 
-for day in list(range(1,len(Data))):
-    PercentChange = DataDifferences[Ticker][day] / Data[Ticker][day]
-    out.iloc[day-1] = PercentChange
+for week in list(range(1,len(Data))):
+    PercentChange = DataDifferences[Ticker][week] / Data[Ticker][week-1]
+    out.iloc[week-1] = PercentChange
 
 Ys = list()
 
 for point in list(np.linspace(-1,1,Partitions)):
-    Ys.append(len(out[(out['Daily change'] > point-(1/Partitions)) & (out['Daily change'] < point+(1/Partitions))
+    Ys.append(len(out[(out['Weekly change'] > point-(1/Partitions)) & (out['Weekly change'] < point+(1/Partitions))
 ]))
     
     
-Returns = pd.DataFrame(data = Ys, columns = ["Daily Percent Return Occurances"])
+Returns = pd.DataFrame(data = Ys, columns = ["Weekly Percent Return Occurances"])
 #sns.barplot(np.linspace(-1,1,201), Ys )
 
 #weighting daily return probability based on the number of occurances in the list
 TotalDays = int(Returns.sum())
 
 PercentOccurance = pd.DataFrame()
-PercentOccurance = Returns["Daily Percent Return Occurances"].div(TotalDays)
+PercentOccurance = Returns["Weekly Percent Return Occurances"].div(TotalDays)
 
 #Running the simulation by first rolling a random integer then comparing it to
-SimsNum = int(50) 
+SimsNum = int(10) 
 DaysNum = TotalDays
 IsList = list()
 SimDF = pd.DataFrame(index = range(0,DaysNum), columns = range(0,SimsNum))
@@ -67,8 +69,8 @@ for Sim in range(0,SimsNum):
         i = 0
         
         while i < len(Returns):
-            if (Returns["Daily Percent Return Occurances"][i] + SumCounter) < roll:
-                SumCounter = Returns["Daily Percent Return Occurances"][i] + SumCounter
+            if (Returns["Weekly Percent Return Occurances"][i] + SumCounter) < roll:
+                SumCounter = Returns["Weekly Percent Return Occurances"][i] + SumCounter
                 i += 1
             else:
                 #print(i)
@@ -78,10 +80,10 @@ for Sim in range(0,SimsNum):
                 break
         pass
     print("sim ended")
-    print(Sim/SimsNum)
+    print((Sim+1)/SimsNum)
     pass
 
-PltNum = 10
+PltNum = 4
 
 plt.plot(SimDF[range(0,PltNum)])
 
@@ -89,3 +91,4 @@ plt.plot(SimDF.sum(axis = 1)/SimsNum)
 
 Aver = out.mean()
 print(Aver)
+
