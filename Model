@@ -14,10 +14,10 @@ import seaborn as sns
 
 #Getting the Data from Yahoo, saving it in the "Data" DataFrame indexed by Ticker
 
-Ticker = 'VOO'
+Ticker = 'CLF'
 Start = '2018-01-01'
 End = dt.datetime.today()
-Partitions = 2000
+Partitions = 4000
 
 Data = pd.DataFrame(data = None)
 Data[Ticker] = web.DataReader(Ticker, 'yahoo', start=Start)['Adj Close']
@@ -53,7 +53,7 @@ PercentOccurance = pd.DataFrame()
 PercentOccurance = Returns["Daily Percent Return Occurances"].div(TotalDays)
 
 #Running the simulation by first rolling a random integer then comparing it to
-SimsNum = int(20) 
+SimsNum = int(50) 
 DaysNum = TotalDays
 IsList = list()
 SimDF = pd.DataFrame(index = range(0,DaysNum), columns = range(0,SimsNum))
@@ -78,9 +78,10 @@ for Sim in range(0,SimsNum):
                 break
         pass
     print("sim ended")
+    print(Sim/SimsNum)
     pass
 
-PltNum = 3
+PltNum = 10
 
 plt.plot(SimDF[range(0,PltNum)])
 
