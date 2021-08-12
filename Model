@@ -14,9 +14,10 @@ import seaborn as sns
 
 #Getting the Data from Yahoo, saving it in the "Data" DataFrame indexed by Ticker
 
-Ticker = 'CLF'
+Ticker = 'VOO'
 Start = '2018-01-01'
 End = dt.datetime.today()
+Partitions = 2000
 
 Data = pd.DataFrame(data = None)
 Data[Ticker] = web.DataReader(Ticker, 'yahoo', start=Start)['Adj Close']
@@ -37,10 +38,11 @@ for day in list(range(1,len(Data))):
 
 Ys = list()
 
-for point in list(np.linspace(-1,1,201)):
-    Ys.append(len(out[(out['Daily change'] > point-.005) & (out['Daily change'] < point+.005)])
-)
-
+for point in list(np.linspace(-1,1,Partitions)):
+    Ys.append(len(out[(out['Daily change'] > point-(1/Partitions)) & (out['Daily change'] < point+(1/Partitions))
+]))
+    
+    
 Returns = pd.DataFrame(data = Ys, columns = ["Daily Percent Return Occurances"])
 #sns.barplot(np.linspace(-1,1,201), Ys )
 
@@ -51,7 +53,7 @@ PercentOccurance = pd.DataFrame()
 PercentOccurance = Returns["Daily Percent Return Occurances"].div(TotalDays)
 
 #Running the simulation by first rolling a random integer then comparing it to
-SimsNum = int(10) 
+SimsNum = int(20) 
 DaysNum = TotalDays
 IsList = list()
 SimDF = pd.DataFrame(index = range(0,DaysNum), columns = range(0,SimsNum))
@@ -70,14 +72,19 @@ for Sim in range(0,SimsNum):
                 i += 1
             else:
                 #print(i)
-                StockPrice = (((i+.05)/100)*StockPrice)
-                print(StockPrice)
+                StockPrice = ((((2*i)+1)/len(Returns))*StockPrice)
+                #print(StockPrice)
                 SimDF[Sim][days] = StockPrice
                 break
         pass
+    print("sim ended")
     pass
 
-plt.plot(SimDF[range(0,SimsNum)])
+PltNum = 3
+
+plt.plot(SimDF[range(0,PltNum)])
+
 plt.plot(SimDF.sum(axis = 1)/SimsNum)
+
 Aver = out.mean()
 print(Aver)
